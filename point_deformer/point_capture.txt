@@ -1,0 +1,55 @@
+sop
+point_capture(
+
+string capturing_geo = "";
+float max_capture_dist = 1000;
+
+int nb_capturing_points=1;
+
+string tx_name='tx';
+string ty_name='tx';
+
+int add_weight=0;
+
+)
+{
+
+    int handle = pcopen(capturing_geo, "P", P, max_capture_dist, nb_capturing_points, "preload", 1);
+    int cmptr = 0;
+    while(pciterate(handle))
+    {
+        int cur_ptnum;
+        pcimport(handle, "point.number", cur_ptnum);
+        addattribute(sprintf("ptnum%d", cmptr), cur_ptnum);
+        
+        vector cur_P, cur_tx, cur_ty;
+        pcimport(handle, "P", cur_P);
+        pcimport(handle, tx_name, cur_tx);
+        pcimport(handle, ty_name, cur_ty);
+
+        float tx = length((P-cur_P) * cur_tx);
+        float ty = length((P-cur_P) * cur_ty);
+
+        addattribute(sprintf("tx%d", cmptr), tx);
+        addattribute(sprintf("ty%d", cmptr), ty);
+
+        
+
+        if( add_weight )
+        {
+            float cur_dist;
+            pcimport(handle, "point.distance", cur_dist);
+            addattribute(sprintf("weight%d", cmptr), cur_dist);
+        }
+
+        cmptr++;
+        
+    }
+    if(nb_capturing_points>1)
+    {
+        addattribute("nb_pts", cmptr);
+    }
+    
+
+}
+
